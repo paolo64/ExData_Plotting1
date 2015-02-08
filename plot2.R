@@ -1,20 +1,24 @@
 #
 # plot2
 #
+
+# sqldf package required
+if(!require('sqldf')){
+  install.packages('sqldf')
+}
 library(sqldf)
+
 # Loading data
-cat ("Loading data\n")
 df <- read.csv.sql("data/household_power_consumption.txt","select * from file where Date in ('1/2/2007','2/2/2007')",header = TRUE, sep = ";")
 sqldf() # close connection
 
-# Converting time
-df$Time <- strptime(paste(df$Date,df$Time),"%d/%m/%Y%H:%M:%S")
-df$Date <- as.Date(df$Date,"%d/%m/%Y")
+# Converting date
+datetime <- paste(as.Date(df$Date,"%d/%m/%Y"), df$Time)
+df$Datetime <- as.POSIXct(datetime)
 
 # Creating plot file
 fname = "plot2.png"
-cat(sprintf("Creating '%s' file\n",fname))
-png(filename=fname)
-plot(df$Time,df$Global_active_power,type="l",xlab="",ylab="Global Active Power (kilowatss)")
+png(filename=fname, width = 480, height = 480)
+plot(df$Datetime,df$Global_active_power,type="l",xlab="",ylab="Global Active Power (kilowatts)")
 dev.off()
 cat(sprintf("File '%s' created\n",fname))
